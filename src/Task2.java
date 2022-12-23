@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 public class Task2 {
@@ -13,7 +14,7 @@ public class Task2 {
         Collections.sort(randomValues);
         int searchValue =  13;
 
-        boolean isSearchValueInList = isValueInListEnumerationMethod(searchValue, randomValues);
+        boolean isSearchValueInList = isValueInListEnumerationMethod(searchValue, randomValues, 0);
         String result1 = (isSearchValueInList) ? "" : "не";
         System.out.println("Результат: число " + " " + searchValue + " " + result1 + " содержится в массиве" + randomValues);
         System.out.println();
@@ -27,13 +28,15 @@ public class Task2 {
 
         //Тест с большими значениями
 
-        int length1 = 100000000;
+        // больше этого значение возникает ошибка StackOverflow, если искать метод рекурсивно, а не через цикл for.
+        // Меньше этого значения разница в миллисекундах совсем не видна.
+        int length1 = 7000;
         ArrayList<Integer> randomValues1 = GenerateList(rnd, length1);
         Collections.sort(randomValues);
         int searchValue1 =  17;
 
         long startTime1 = System.currentTimeMillis();
-        boolean isSearchValueInList1 = isValueInListEnumerationMethod(searchValue1, randomValues1);
+        boolean isSearchValueInList1 = isValueInListEnumerationMethod(searchValue1, randomValues1, 0);
         long endTime1 = System.currentTimeMillis();
 
 
@@ -65,30 +68,31 @@ public class Task2 {
         return result;
     }
 
-    private static boolean isValueInListEnumerationMethod(int value, ArrayList<Integer> list){
-
-        for (int listItem: list) {
-            if (value == listItem){
-                return true;
-            }
+    private static boolean isValueInListEnumerationMethod(int value, List<Integer> list, int index){
+        if (list.get(index) == value) {
+            return true;
         }
-
-        return false;
+        if (index + 1 == list.size()) {
+            return false;
+        }
+        return isValueInListEnumerationMethod(value, list,index + 1);
     }
 
-    private static boolean isValueInListBinaryMethod(int value, ArrayList<Integer> list){
-        int size = list.size();
-        int halfValue = list.get(size / 2);
+    private static boolean isValueInListBinaryMethod(int value, List<Integer> list){
+        int size = list.size() - 1;
+        int halfSize = size / 2;
+        int halfValue = list.get(halfSize);
         boolean isValueInLeftPart = (value < halfValue);
-        int startRange = isValueInLeftPart ? 0 : halfValue;
-        int endRange = isValueInLeftPart ? halfValue : size;
+        int startRange = isValueInLeftPart ? 0 : halfSize;
+        int endRange = isValueInLeftPart ? halfSize : size;
 
-        for (int i = startRange; i < endRange; i++){
-            if (value == list.get(i)){
-                return true;
-            }
+        if (list.get(startRange) == value) {
+            return true;
         }
-        return false;
+        if (startRange == size) {
+            return false;
+        }
+        return isValueInListBinaryMethod(value, list.subList(startRange, endRange));
     }
 
 }
